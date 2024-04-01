@@ -26,7 +26,7 @@ const App = () => {
 
   useEffect(hook, [])
 
-  const personsToShow = persons.filter(person => person.name.toLowerCase().includes(filter))
+  const personsToShow = persons.filter(person => person.name.toLowerCase().includes(filter.toLowerCase()))
   const addName = (e) => {
     e.preventDefault()
     const existingPerson = persons.find(p => p.name === newName)
