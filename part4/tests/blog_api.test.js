@@ -11,14 +11,19 @@ const api = supertest(app)
 const Blog = require('../models/blog')
 const User = require('../models/user')
 
+let token = ''
+
 describe('testing when there is an initial database', () => {
   beforeEach(async () => {
-    await Blog.deleteMany({})
+    const user = await helper.createInitialUser()
 
-    for (let blog of helper.initialBlogs) {
-      let blogObject = new Blog(blog)
-      await blogObject.save()
-    }
+    const response = await api.post('/api/login').send({
+      username: `${helper.initialUser.username}`,
+      password: `${helper.initialUser.password}`
+    })
+    token = response.body.token
+
+    await helper.createInitialBlogs(user)
   })
 
   describe('get operations', () => {
@@ -49,6 +54,7 @@ describe('testing when there is an initial database', () => {
       await api
         .post('/api/blogs')
         .send(newBlog)
+        .set('Authorization', `Bearer ${token}`)
         .expect(201)
         .expect('Content-Type', /application\/json/)
 
@@ -56,6 +62,24 @@ describe('testing when there is an initial database', () => {
       assert.strictEqual(blogsAtEnd.length, helper.initialBlogs.length + 1)
       const urls = blogsAtEnd.map(blog => blog.url)
       assert(urls.includes(newBlog.url))
+    })
+
+    test('blog cannot be added without a token', async () => {
+      const newBlog = {
+        title: 'Cats',
+        author: 'Someone excited about cats',
+        url: 'https://www.blog-about-cats.com',
+        likes: 1359
+      }
+
+      await api
+        .post('/api/blogs')
+        .send(newBlog)
+        .expect(401)
+        .expect('Content-Type', /application\/json/)
+
+      const blogsAtEnd = await helper.blogsInDb()
+      assert.strictEqual(blogsAtEnd.length, helper.initialBlogs.length)
     })
 
     test('blog with missing likes gets a value of 0 ', async () => {
@@ -68,6 +92,7 @@ describe('testing when there is an initial database', () => {
       const savedBlog = await api
         .post('/api/blogs')
         .send(newBlog)
+        .set('Authorization', `Bearer ${token}`)
         .expect(201)
         .expect('Content-Type', /application\/json/)
 
@@ -91,7 +116,7 @@ describe('testing when there is an initial database', () => {
       ]
 
       for (let blog of blogs) {
-        await api.post('/api/blogs').send(blog).expect(400)
+        await api.post('/api/blogs').send(blog).set('Authorization', `Bearer ${token}`).expect(400)
       }
 
       const blogsAtEnd = await helper.blogsInDb()
@@ -126,9 +151,10 @@ describe('testing when there is an initial database', () => {
   describe('delete operations', () => {
     test('blog can be deleted', async () => {
       const blogsAtStart = await helper.blogsInDb()
+
       const blogToDelete = blogsAtStart[0]
 
-      await api.delete(`/api/blogs/${blogToDelete.id}`).expect(204)
+      await api.delete(`/api/blogs/${blogToDelete.id}`).set('Authorization', `Bearer ${token}`).expect(204)
 
       const blogsAtEnd = await helper.blogsInDb()
 
@@ -138,14 +164,10 @@ describe('testing when there is an initial database', () => {
     })
   })
 })
+
 describe('when there is initially one user in db', () => {
   beforeEach(async () => {
-    await User.deleteMany({})
-
-    const passwordHash = await bcrypt.hash('sekret', 10)
-    const user = new User({ username: 'root', passwordHash })
-
-    await user.save()
+    await helper.createInitialUser()
   })
 
   test('creation succeeds with a fresh username', async () => {
