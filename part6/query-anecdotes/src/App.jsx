@@ -3,15 +3,27 @@ import Notification from './components/Notification'
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { getAnecdotes, addAnectode, updateAnecdote } from './services/anecdotes.js'
+import { useNotificationDispatch } from './NotificationContext.jsx'
 
 const App = () => {
   const queryClient = useQueryClient()
+  const dispatch = useNotificationDispatch()
 
   const newAnecdoteMutation = useMutation({
     mutationFn: addAnectode,
     onSuccess: newAnecdote => {
       const anecdotes = queryClient.getQueryData(['anecdotes'])
       queryClient.setQueryData(['anecdotes'], anecdotes.concat(newAnecdote))
+      dispatch({ type: 'SET', payload: `you added '${newAnecdote.content}'` })
+      setTimeout(() => {
+        dispatch({ type: 'REMOVE' })
+      }, 5000)
+    },
+    onError: e => {
+      dispatch({ type: 'SET', payload: e.response.data.error })
+      setTimeout(() => {
+        dispatch({ type: 'REMOVE' })
+      }, 5000)
     }
   })
 
@@ -23,7 +35,10 @@ const App = () => {
         ['anecdotes'],
         anecdotes.map(anecdote => (anecdote.id === updatedAnecdote.id ? updatedAnecdote : anecdote))
       )
-      //queryClient.invalidateQueries({ queryKey: ['anecdotes'] })
+      dispatch({ type: 'SET', payload: `you voted '${updatedAnecdote.content}'` })
+      setTimeout(() => {
+        dispatch({ type: 'REMOVE' })
+      }, 5000)
     }
   })
 
