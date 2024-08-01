@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import PropTypes from 'prop-types'
 
-const Blog = ({ blog, increaseLikes, currentUser, removeBlog }) => {
+const Blog = ({ blog, addLike, currentUser, removeBlog }) => {
   const [visible, setVisible] = useState(false)
   const [removable, setRemovable] = useState(false)
 
@@ -16,27 +16,11 @@ const Blog = ({ blog, increaseLikes, currentUser, removeBlog }) => {
   const toggleVisibility = () => {
     setVisible(!visible)
   }
-
-  const addLike = async () => {
-    const blogObject = {
-      title: blog.title,
-      author: blog.author,
-      url: blog.url,
-      user: blog.user.id,
-      likes: blog.likes + 1
-    }
-    increaseLikes(blog.id, blogObject)
-  }
-
-  const deleteBlog = async () => {
-    removeBlog(blog)
-  }
-
   const removeButton = () =>
     removable ? (
       <>
         <br />
-        <button onClick={deleteBlog}>remove</button>
+        <button onClick={() => removeBlog(blog)}>remove</button>
       </>
     ) : null
 
@@ -46,7 +30,7 @@ const Blog = ({ blog, increaseLikes, currentUser, removeBlog }) => {
       <div className="details" style={showWhenVisible}>
         {blog.url}
         <br />
-        likes: {blog.likes} <button onClick={addLike}>like</button>
+        likes: {blog.likes} <button onClick={() => addLike(blog)}>like</button>
         <br />
         {blog.user.name}
         {removeButton()}
@@ -57,7 +41,7 @@ const Blog = ({ blog, increaseLikes, currentUser, removeBlog }) => {
 
 Blog.propTypes = {
   blog: PropTypes.object.isRequired,
-  increaseLikes: PropTypes.func.isRequired,
+  addLike: PropTypes.func.isRequired,
   currentUser: PropTypes.object.isRequired,
   removeBlog: PropTypes.func.isRequired
 }
