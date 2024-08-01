@@ -1,7 +1,7 @@
-export const Notification = ({ notification }) => {
-  if (notification === null) {
-    return null
-  }
+import { useSelector } from 'react-redux'
 
-  return <div className={`message ${notification.type}`}>{notification.message}</div>
+export const Notification = () => {
+  const notification = useSelector(({ notification }) => notification)
+
+  return notification.message && <div className={`message ${notification.type}`}>{notification.message}</div>
 }

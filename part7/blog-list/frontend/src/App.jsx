@@ -1,6 +1,9 @@
 import './index.css'
 
 import { useState, useEffect, useRef } from 'react'
+import { useDispatch } from 'react-redux'
+import { displayNotification } from './reducers/notificationReducer'
+
 import Blog from './components/Blog'
 import blogService from './services/blogs'
 import loginService from './services/login'
@@ -10,13 +13,12 @@ import LoginForm from './components/LoginForm'
 import BlogForm from './components/BlogForm'
 
 const App = () => {
+  const dispatch = useDispatch()
+
   const [blogs, setBlogs] = useState([])
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [user, setUser] = useState(null)
-  const [notification, setNotification] = useState(null)
-
-  const [timeoutId, setTimeoutId] = useState(null)
 
   const blogFormRef = useRef()
 
@@ -62,19 +64,6 @@ const App = () => {
     </>
   )
 
-  const displayNotification = ({ message, type, duration }) => {
-    clearTimeout(timeoutId)
-    setNotification({
-      message: message,
-      type: type
-    })
-
-    const id = setTimeout(() => {
-      setNotification(null)
-    }, duration)
-    setTimeoutId(id)
-  }
-
   const handleLogin = async event => {
     event.preventDefault()
     try {
@@ -84,17 +73,21 @@ const App = () => {
       setUser(user)
       setUsername('')
       setPassword('')
-      displayNotification({
-        message: `Logged in as ${username}`,
-        type: 'success',
-        duration: 3000
-      })
+      dispatch(
+        displayNotification({
+          message: `Logged in as ${username}`,
+          type: 'success',
+          duration: 3000
+        })
+      )
     } catch (exception) {
-      displayNotification({
-        message: 'Wrong credentials',
-        type: 'error',
-        duration: 3000
-      })
+      dispatch(
+        displayNotification({
+          message: 'Wrong credentials',
+          type: 'error',
+          duration: 3000
+        })
+      )
     }
   }
 
@@ -103,17 +96,21 @@ const App = () => {
     try {
       window.localStorage.removeItem('loggedBlogappUser')
       setUser(null)
-      displayNotification({
-        message: `Logged out ${username}`,
-        type: 'success',
-        duration: 3000
-      })
+      dispatch(
+        displayNotification({
+          message: `Logged out ${username}`,
+          type: 'success',
+          duration: 3000
+        })
+      )
     } catch (exception) {
-      displayNotification({
-        message: 'Failed to logout',
-        type: 'error',
-        duration: 3000
-      })
+      dispatch(
+        displayNotification({
+          message: 'Failed to logout',
+          type: 'error',
+          duration: 3000
+        })
+      )
     }
   }
 
@@ -122,17 +119,21 @@ const App = () => {
       blogFormRef.current.toggleVisibility()
       const response = await blogService.create(blogObject)
       setBlogs(blogs.concat(response))
-      displayNotification({
-        message: `A new blog '${response.title}' by ${response.author} added`,
-        type: 'success',
-        duration: 3000
-      })
+      dispatch(
+        displayNotification({
+          message: `A new blog '${response.title}' by ${response.author} added`,
+          type: 'success',
+          duration: 3000
+        })
+      )
     } catch (exception) {
-      displayNotification({
-        message: exception.message,
-        type: 'error',
-        duration: 3000
-      })
+      dispatch(
+        displayNotification({
+          message: exception.message,
+          type: 'error',
+          duration: 3000
+        })
+      )
     }
   }
 
@@ -141,11 +142,13 @@ const App = () => {
       const response = await blogService.update(id, blogObject)
       setBlogs(blogs.map(blog => (blog.id !== id ? blog : response)).sort((a, b) => b.likes - a.likes))
     } catch (exception) {
-      displayNotification({
-        message: exception.message,
-        type: 'error',
-        duration: 3000
-      })
+      dispatch(
+        displayNotification({
+          message: exception.message,
+          type: 'error',
+          duration: 3000
+        })
+      )
     }
   }
 
@@ -154,24 +157,28 @@ const App = () => {
       try {
         const response = await blogService.remove(blog.id)
         setBlogs(blogs.filter(b => b.id !== blog.id))
-        displayNotification({
-          message: `Blog '${blog.title}' by ${blog.author} removed`,
-          type: 'success',
-          duration: 3000
-        })
+        dispatch(
+          displayNotification({
+            message: `Blog '${blog.title}' by ${blog.author} removed`,
+            type: 'success',
+            duration: 3000
+          })
+        )
       } catch (exception) {
-        displayNotification({
-          message: exception.message,
-          type: 'error',
-          duration: 3000
-        })
+        dispatch(
+          displayNotification({
+            message: exception.message,
+            type: 'error',
+            duration: 3000
+          })
+        )
       }
     }
   }
 
   return (
     <div>
-      <Notification notification={notification} />
+      <Notification />
       {user === null ? (
         loginForm()
       ) : (
