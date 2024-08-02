@@ -2,6 +2,8 @@ import { createSlice } from '@reduxjs/toolkit'
 
 import blogService from '../services/blogs'
 
+import { displayNotification } from './notificationReducer'
+
 const initialState = []
 const blogSlice = createSlice({
   name: 'blog',
@@ -28,33 +30,87 @@ export const { setBlogs, appendBlog, increaseLikes, removeBlog } = blogSlice.act
 
 export const initializeBlogs = () => {
   return async dispatch => {
-    const blogs = await blogService.getAll()
-    dispatch(setBlogs(blogs))
+    try {
+      const blogs = await blogService.getAll()
+      dispatch(setBlogs(blogs))
+    } catch (exception) {
+      dispatch(
+        displayNotification({
+          message: 'Failed to connect to the server',
+          type: 'error',
+          duration: 3000
+        })
+      )
+    }
   }
 }
 
 export const createBlog = blogObject => {
   return async dispatch => {
-    const newBlog = await blogService.create(blogObject)
-    dispatch(appendBlog(newBlog))
+    try {
+      const newBlog = await blogService.create(blogObject)
+      dispatch(appendBlog(newBlog))
+      dispatch(
+        displayNotification({
+          message: `A new blog '${blogObject.title}' by ${blogObject.author} added`,
+          type: 'success',
+          duration: 3000
+        })
+      )
+    } catch (exception) {
+      dispatch(
+        displayNotification({
+          message: exception.message,
+          type: 'error',
+          duration: 3000
+        })
+      )
+    }
   }
 }
 
 export const giveLike = blogObject => {
   return async dispatch => {
-    const updatedBlog = {
-      ...blogObject,
-      likes: blogObject.likes + 1
+    try {
+      const updatedBlog = {
+        ...blogObject,
+        likes: blogObject.likes + 1
+      }
+      const likedBlog = await blogService.update(blogObject.id, updatedBlog)
+      dispatch(increaseLikes(likedBlog))
+    } catch (exception) {
+      dispatch(
+        displayNotification({
+          message: exception.message,
+          type: 'error',
+          duration: 3000
+        })
+      )
     }
-    const likedBlog = await blogService.update(blogObject.id, updatedBlog)
-    dispatch(increaseLikes(likedBlog))
   }
 }
 
-export const deleteBlog = blogId => {
+export const deleteBlog = blog => {
   return async dispatch => {
-    await blogService.remove(blogId)
-    dispatch(removeBlog(blogId))
+    try {
+      await blogService.remove(blog.id)
+      dispatch(removeBlog(blog.id))
+      dispatch(
+        displayNotification({
+          message: `Blog '${blog.title}' by ${blog.author} removed`,
+          type: 'success',
+          duration: 3000
+        })
+      )
+    } catch (exception) {
+      dispatch(
+        displayNotification({
+          message: exception.message,
+          type: 'error',
+          duration: 3000
+        })
+      )
+    }
   }
 }
 

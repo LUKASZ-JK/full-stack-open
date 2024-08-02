@@ -2,8 +2,8 @@ import './index.css'
 
 import { useState, useEffect, useRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { displayNotification } from './reducers/notificationReducer'
 import { initializeBlogs, createBlog, giveLike, deleteBlog } from './reducers/blogReducer'
+import { initializeUser, loginUser, logoutUser } from './reducers/userReducer'
 
 import Blog from './components/Blog'
 import blogService from './services/blogs'
@@ -18,18 +18,12 @@ const App = () => {
 
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
-  const [user, setUser] = useState(null)
 
   const blogFormRef = useRef()
 
   useEffect(() => {
-    const loggedUserJSON = window.localStorage.getItem('loggedBlogappUser')
-    if (loggedUserJSON) {
-      const user = JSON.parse(loggedUserJSON)
-      setUser(user)
-      blogService.setToken(user.token)
-    }
-  }, [])
+    dispatch(initializeUser())
+  }, [dispatch])
 
   useEffect(() => {
     dispatch(initializeBlogs())
@@ -37,6 +31,10 @@ const App = () => {
 
   const blogs = useSelector(({ blog }) => {
     return blog
+  })
+
+  const user = useSelector(({ user }) => {
+    return user
   })
 
   const loginForm = () => (
@@ -67,110 +65,28 @@ const App = () => {
 
   const handleLogin = async event => {
     event.preventDefault()
-    try {
-      const user = await loginService.login({ username, password })
-      window.localStorage.setItem('loggedBlogappUser', JSON.stringify(user))
-      blogService.setToken(user.token)
-      setUser(user)
-      setUsername('')
-      setPassword('')
-      dispatch(
-        displayNotification({
-          message: `Logged in as ${username}`,
-          type: 'success',
-          duration: 3000
-        })
-      )
-    } catch (exception) {
-      dispatch(
-        displayNotification({
-          message: 'Wrong credentials',
-          type: 'error',
-          duration: 3000
-        })
-      )
-    }
+    dispatch(loginUser(username, password))
+    setUsername('')
+    setPassword('')
   }
 
   const handleLogout = async event => {
     event.preventDefault()
-    try {
-      window.localStorage.removeItem('loggedBlogappUser')
-      setUser(null)
-      dispatch(
-        displayNotification({
-          message: `Logged out ${username}`,
-          type: 'success',
-          duration: 3000
-        })
-      )
-    } catch (exception) {
-      dispatch(
-        displayNotification({
-          message: 'Failed to logout',
-          type: 'error',
-          duration: 3000
-        })
-      )
-    }
+    dispatch(logoutUser(user))
   }
 
   const addBlog = async blogObject => {
-    try {
-      dispatch(createBlog(blogObject))
-      blogFormRef.current.toggleVisibility()
-      dispatch(
-        displayNotification({
-          message: `A new blog '${blogObject.title}' by ${blogObject.author} added`,
-          type: 'success',
-          duration: 3000
-        })
-      )
-    } catch (exception) {
-      dispatch(
-        displayNotification({
-          message: exception.message,
-          type: 'error',
-          duration: 3000
-        })
-      )
-    }
+    dispatch(createBlog(blogObject))
+    blogFormRef.current.toggleVisibility()
   }
 
   const addLike = async blogObject => {
-    try {
-      dispatch(giveLike(blogObject))
-    } catch (exception) {
-      dispatch(
-        displayNotification({
-          message: exception.message,
-          type: 'error',
-          duration: 3000
-        })
-      )
-    }
+    dispatch(giveLike(blogObject))
   }
 
   const removeBlog = async blog => {
     if (window.confirm(`Delete ${blog.title} by ${blog.author}?`)) {
-      try {
-        dispatch(deleteBlog(blog.id))
-        dispatch(
-          displayNotification({
-            message: `Blog '${blog.title}' by ${blog.author} removed`,
-            type: 'success',
-            duration: 3000
-          })
-        )
-      } catch (exception) {
-        dispatch(
-          displayNotification({
-            message: exception.message,
-            type: 'error',
-            duration: 3000
-          })
-        )
-      }
+      dispatch(deleteBlog(blog))
     }
   }
 
