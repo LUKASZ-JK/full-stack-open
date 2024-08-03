@@ -6,7 +6,7 @@ import { initializeBlogs, createBlog, giveLike, deleteBlog } from './reducers/bl
 import { initializeUser, loginUser, logoutUser } from './reducers/userReducer'
 import { initializeUsers } from './reducers/usersReducer'
 
-import { Routes, Route, Link, useMatch } from 'react-router-dom'
+import { Routes, Route, Link, useMatch, useNavigate } from 'react-router-dom'
 
 import Blog from './components/Blog'
 import { Notification } from './components/Notification'
@@ -17,6 +17,7 @@ import User from './components/User'
 
 const App = () => {
   const dispatch = useDispatch()
+  const navigate = useNavigate()
 
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
@@ -47,8 +48,11 @@ const App = () => {
     return users
   })
 
-  const match = useMatch('/users/:id')
-  const user = match ? users.find(user => user.id === match.params.id) : null
+  const matchUser = useMatch('/users/:id')
+  const user = matchUser ? users.find(user => user.id === matchUser.params.id) : null
+
+  const matchBlog = useMatch('/blogs/:id')
+  const blog = matchBlog ? blogs.find(blog => blog.id === matchBlog.params.id) : null
 
   const handleLogin = async event => {
     event.preventDefault()
@@ -74,6 +78,7 @@ const App = () => {
   const removeBlog = async blog => {
     if (window.confirm(`Delete ${blog.title} by ${blog.author}?`)) {
       dispatch(deleteBlog(blog))
+      navigate('/')
     }
   }
 
@@ -97,7 +102,11 @@ const App = () => {
       <br />
       <div>
         {blogs.map(blog => (
-          <Blog key={blog.id} blog={blog} addLike={addLike} currentUser={currentUser} removeBlog={removeBlog} />
+          <div key={blog.id} className="blog">
+            <Link to={`/blogs/${blog.id}`}>
+              {blog.title} by {blog.author}
+            </Link>
+          </div>
         ))}
       </div>
     </>
@@ -148,8 +157,15 @@ const App = () => {
         <MainSection>
           <Routes>
             <Route path="/" element={<BlogsSection />} />
+            <Route
+              path="/blogs/:id"
+              element={
+                currentUser &&
+                blog && <Blog blog={blog} addLike={addLike} currentUser={currentUser} removeBlog={removeBlog} />
+              }
+            />
             <Route path="/users" element={<UsersSection />} />
-            <Route path="/users/:id" element={<User user={user} />} />
+            <Route path="/users/:id" element={user && <User user={user} />} />
           </Routes>
         </MainSection>
       </div>

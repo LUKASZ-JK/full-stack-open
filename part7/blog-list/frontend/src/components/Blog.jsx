@@ -2,20 +2,12 @@ import { useState, useEffect } from 'react'
 import PropTypes from 'prop-types'
 
 const Blog = ({ blog, addLike, currentUser, removeBlog }) => {
-  const [visible, setVisible] = useState(false)
   const [removable, setRemovable] = useState(false)
-
-  const showWhenVisible = { display: visible ? '' : 'none' }
-
-  const buttonText = visible ? 'hide' : 'show'
 
   useEffect(() => {
     setRemovable(blog.user.username === currentUser.username ? true : false)
   }, [blog.user.username, currentUser.username])
 
-  const toggleVisibility = () => {
-    setVisible(!visible)
-  }
   const removeButton = () =>
     removable ? (
       <>
@@ -25,14 +17,16 @@ const Blog = ({ blog, addLike, currentUser, removeBlog }) => {
     ) : null
 
   return (
-    <div className="blog">
-      {blog.title} by {blog.author} <button onClick={toggleVisibility}>{buttonText}</button>
-      <div className="details" style={showWhenVisible}>
-        {blog.url}
+    <div>
+      <h2>
+        {blog.title} by {blog.author}
+      </h2>
+      <div className="details">
+        <a href={blog.url}>{blog.url}</a>
         <br />
         likes: {blog.likes} <button onClick={() => addLike(blog)}>like</button>
         <br />
-        {blog.user.name}
+        added by {blog.user.name}
         {removeButton()}
       </div>
     </div>
