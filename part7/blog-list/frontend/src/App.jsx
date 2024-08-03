@@ -3,7 +3,7 @@ import './index.css'
 import { useState, useEffect, useRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { createSelector } from '@reduxjs/toolkit'
-import { initializeBlogs, createBlog, giveLike, deleteBlog } from './reducers/blogReducer'
+import { initializeBlogs, createBlog, giveLike, deleteBlog, addComment } from './reducers/blogReducer'
 import { initializeUser, loginUser, logoutUser } from './reducers/userReducer'
 import { initializeUsers } from './reducers/usersReducer'
 
@@ -86,6 +86,10 @@ const App = () => {
       dispatch(deleteBlog(blog))
       navigate('/')
     }
+  }
+
+  const submitComment = async (blogId, comment) => {
+    dispatch(addComment(blogId, comment))
   }
 
   const loginForm = () => (
@@ -177,7 +181,13 @@ const App = () => {
               element={
                 currentUser && blog ? (
                   <>
-                    <Blog blog={blog} addLike={addLike} currentUser={currentUser} removeBlog={removeBlog} />
+                    <Blog
+                      blog={blog}
+                      addLike={addLike}
+                      currentUser={currentUser}
+                      removeBlog={removeBlog}
+                      submitComment={submitComment}
+                    />
                   </>
                 ) : null
               }

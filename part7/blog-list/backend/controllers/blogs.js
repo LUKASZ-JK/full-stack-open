@@ -18,7 +18,8 @@ blogsRouter.post('/', middleware.userExtractor, async (request, response) => {
     author: body.author,
     url: body.url,
     likes: body.likes || 0,
-    user: user._id
+    user: user._id,
+    comments: body.comments || []
   })
 
   const savedBlog = await blog.save()
@@ -39,7 +40,8 @@ blogsRouter.put('/:id', async (request, response) => {
     title: body.title,
     author: body.author,
     url: body.url,
-    likes: body.likes
+    likes: body.likes,
+    comments: body.comments
   }
 
   const updatedBlog = await Blog.findByIdAndUpdate(request.params.id, blog, { new: true }).populate('user', {
@@ -59,6 +61,22 @@ blogsRouter.delete('/:id', middleware.userExtractor, async (request, response) =
   } else {
     return response.status(401).json({ error: 'no authorization' })
   }
+})
+
+blogsRouter.post('/:id/comments', middleware.userExtractor, async (request, response) => {
+  const comment = request.body.comment
+
+  if (!comment) {
+    return response.status(400).send({ error: 'comment cannot be empty' })
+  }
+
+  const blog = await Blog.findById(request.params.id)
+  blog.comments.push(comment)
+  const updatedBlog = await Blog.findByIdAndUpdate(request.params.id, blog, { new: true }).populate('user', {
+    username: 1,
+    name: 1
+  })
+  response.json(updatedBlog)
 })
 
 module.exports = blogsRouter

@@ -1,12 +1,19 @@
 import { useState, useEffect } from 'react'
 import PropTypes from 'prop-types'
 
-const Blog = ({ blog, addLike, currentUser, removeBlog }) => {
+const Blog = ({ blog, addLike, currentUser, removeBlog, submitComment }) => {
   const [removable, setRemovable] = useState(false)
+  const [comment, setComment] = useState('')
 
   useEffect(() => {
     setRemovable(blog.user.username === currentUser.username ? true : false)
   }, [blog.user.username, currentUser.username])
+
+  const addComment = async event => {
+    event.preventDefault()
+    submitComment(blog.id, comment)
+    setComment('')
+  }
 
   const removeButton = () =>
     removable ? (
@@ -28,6 +35,24 @@ const Blog = ({ blog, addLike, currentUser, removeBlog }) => {
         <br />
         added by {blog.user.name}
         {removeButton()}
+      </div>
+      <div>
+        <h2>comments</h2>
+        <form onSubmit={addComment}>
+          <input
+            type="text"
+            value={comment}
+            required
+            aria-label="comment"
+            onChange={event => setComment(event.target.value)}
+          />
+          <button>add comment</button>
+        </form>
+        <ul>
+          {blog.comments.map((comment, index) => (
+            <li key={index}>{comment}</li>
+          ))}
+        </ul>
       </div>
     </div>
   )
