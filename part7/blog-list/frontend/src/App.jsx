@@ -6,13 +6,14 @@ import { initializeBlogs, createBlog, giveLike, deleteBlog } from './reducers/bl
 import { initializeUser, loginUser, logoutUser } from './reducers/userReducer'
 import { initializeUsers } from './reducers/usersReducer'
 
-import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom'
+import { Routes, Route, Link, useMatch } from 'react-router-dom'
 
 import Blog from './components/Blog'
 import { Notification } from './components/Notification'
 import Togglable from './components/Togglable'
 import LoginForm from './components/LoginForm'
 import BlogForm from './components/BlogForm'
+import User from './components/User'
 
 const App = () => {
   const dispatch = useDispatch()
@@ -45,6 +46,9 @@ const App = () => {
   const users = useSelector(({ users }) => {
     return users
   })
+
+  const match = useMatch('/users/:id')
+  const user = match ? users.find(user => user.id === match.params.id) : null
 
   const handleLogin = async event => {
     event.preventDefault()
@@ -126,7 +130,9 @@ const App = () => {
         <tbody>
           {users.map(user => (
             <tr key={user.username}>
-              <td>{user.name}</td>
+              <td>
+                <Link to={`/users/${user.id}`}>{user.name}</Link>
+              </td>
               <td>{user.blogs.length}</td>
             </tr>
           ))}
@@ -140,12 +146,11 @@ const App = () => {
       <div>
         <Notification />
         <MainSection>
-          <Router>
-            <Routes>
-              <Route path="/" element={<BlogsSection />} />
-              <Route path="/users" element={<UsersSection />} />
-            </Routes>
-          </Router>
+          <Routes>
+            <Route path="/" element={<BlogsSection />} />
+            <Route path="/users" element={<UsersSection />} />
+            <Route path="/users/:id" element={<User user={user} />} />
+          </Routes>
         </MainSection>
       </div>
     </>
