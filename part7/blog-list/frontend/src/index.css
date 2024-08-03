@@ -25,3 +25,14 @@
   border-width: 1px;
   margin-bottom: 5px;
 }
+
+.navbar {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  background-color: lightblue;
+}
+
+nav > a {
+  margin-right: 1rem;
+}

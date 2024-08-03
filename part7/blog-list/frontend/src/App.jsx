@@ -2,6 +2,7 @@ import './index.css'
 
 import { useState, useEffect, useRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
+import { createSelector } from '@reduxjs/toolkit'
 import { initializeBlogs, createBlog, giveLike, deleteBlog } from './reducers/blogReducer'
 import { initializeUser, loginUser, logoutUser } from './reducers/userReducer'
 import { initializeUsers } from './reducers/usersReducer'
@@ -40,13 +41,18 @@ const App = () => {
     return user
   })
 
-  const blogs = useSelector(({ blog }) => {
-    return blog
+  const selectBlogs = state => state.blog
+  const selectUsers = state => state.users
+
+  const selectUpdatedUsers = createSelector([selectBlogs, selectUsers], (blogs, users) => {
+    return users.map(user => ({
+      ...user,
+      blogs: blogs.filter(blog => blog.user.id === user.id)
+    }))
   })
 
-  const users = useSelector(({ users }) => {
-    return users
-  })
+  const blogs = useSelector(selectBlogs)
+  const users = useSelector(selectUpdatedUsers)
 
   const matchUser = useMatch('/users/:id')
   const user = matchUser ? users.find(user => user.id === matchUser.params.id) : null
@@ -112,19 +118,24 @@ const App = () => {
     </>
   )
 
-  const MainSection = ({ children }) => (
-    <>
-      {currentUser === null ? (
-        loginForm()
-      ) : (
-        <div>
+  const NavSection = ({ children }) => {
+    const userInfo = () =>
+      currentUser ? (
+        <>
           <p>{currentUser.name} logged-in</p>
           <button onClick={handleLogout}>Logout</button>
-          {children}
-        </div>
-      )}
-    </>
-  )
+        </>
+      ) : null
+
+    return (
+      <div className="navbar">
+        <nav>{children}</nav>
+        {userInfo()}
+      </div>
+    )
+  }
+
+  const MainSection = ({ children }) => <>{currentUser === null ? loginForm() : <div>{children}</div>}</>
 
   const UsersSection = () => (
     <>
@@ -153,6 +164,10 @@ const App = () => {
   return (
     <>
       <div>
+        <NavSection>
+          <Link to="/">blogs</Link>
+          <Link to="/users">users</Link>
+        </NavSection>
         <Notification />
         <MainSection>
           <Routes>
@@ -160,12 +175,15 @@ const App = () => {
             <Route
               path="/blogs/:id"
               element={
-                currentUser &&
-                blog && <Blog blog={blog} addLike={addLike} currentUser={currentUser} removeBlog={removeBlog} />
+                currentUser && blog ? (
+                  <>
+                    <Blog blog={blog} addLike={addLike} currentUser={currentUser} removeBlog={removeBlog} />
+                  </>
+                ) : null
               }
             />
             <Route path="/users" element={<UsersSection />} />
-            <Route path="/users/:id" element={user && <User user={user} />} />
+            <Route path="/users/:id" element={user ? <User user={user} /> : null} />
           </Routes>
         </MainSection>
       </div>
