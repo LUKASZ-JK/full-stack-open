@@ -1,14 +1,25 @@
+import { Typography, List, ListItem, ListItemIcon, ListItemText, Icon, Box } from '@mui/material'
+
 const User = ({ user }) => {
   return (
-    <div>
-      <h2>{user.name}</h2>
-      <h3>added blogs</h3>
-      <ul>
+    <Box mt={4}>
+      <Typography variant="h2" gutterBottom>
+        {user.name}
+      </Typography>
+      <Typography variant="h4" component="h3" gutterBottom>
+        Added blogs
+      </Typography>
+      <List>
         {user.blogs.map(blog => (
-          <li key={blog.id}>{blog.title}</li>
+          <ListItem key={blog.id}>
+            <ListItemIcon>
+              <Icon>web</Icon>
+            </ListItemIcon>
+            <ListItemText primary={blog.title} />
+          </ListItem>
         ))}
-      </ul>
-    </div>
+      </List>
+    </Box>
   )
 }
 

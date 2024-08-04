@@ -1,6 +1,21 @@
 import { useState, useEffect } from 'react'
 import PropTypes from 'prop-types'
 
+import {
+  Typography,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+  Icon,
+  Container,
+  Box,
+  Link,
+  Button,
+  FormControl,
+  TextField
+} from '@mui/material'
+
 const Blog = ({ blog, addLike, currentUser, removeBlog, submitComment }) => {
   const [removable, setRemovable] = useState(false)
   const [comment, setComment] = useState('')
@@ -17,44 +32,57 @@ const Blog = ({ blog, addLike, currentUser, removeBlog, submitComment }) => {
 
   const removeButton = () =>
     removable ? (
-      <>
-        <br />
-        <button onClick={() => removeBlog(blog)}>remove</button>
-      </>
+      <Button variant="contained" color="error" onClick={() => removeBlog(blog)}>
+        remove
+      </Button>
     ) : null
 
   return (
-    <div>
-      <h2>
+    <Box mt={4}>
+      <Typography variant="h2" gutterBottom>
         {blog.title} by {blog.author}
-      </h2>
-      <div className="details">
-        <a href={blog.url}>{blog.url}</a>
-        <br />
-        likes: {blog.likes} <button onClick={() => addLike(blog)}>like</button>
-        <br />
-        added by {blog.user.name}
+      </Typography>
+      <Box mb={4}>
+        <Link href={blog.url}>{blog.url}</Link>
+        <p>likes: {blog.likes}</p>
+        <Button size="medium" variant="contained" onClick={() => addLike(blog)}>
+          like
+        </Button>
+        <p>added by {blog.user.name}</p>
         {removeButton()}
-      </div>
-      <div>
-        <h2>comments</h2>
-        <form onSubmit={addComment}>
-          <input
-            type="text"
-            value={comment}
-            required
-            aria-label="comment"
-            onChange={event => setComment(event.target.value)}
-          />
-          <button>add comment</button>
-        </form>
-        <ul>
+      </Box>
+      <Box>
+        <Typography variant="h4" component="h3" gutterBottom>
+          Comments
+        </Typography>
+        <Box component="form" onSubmit={addComment}>
+          <FormControl sx={{ display: 'flex', flexDirection: 'row' }}>
+            <TextField
+              type="text"
+              value={comment}
+              label="Comment"
+              variant="outlined"
+              required
+              aria-label="comment"
+              onChange={event => setComment(event.target.value)}
+            />
+            <Button size="medium" variant="contained" type="submit" sx={{ ml: 4 }}>
+              add comment
+            </Button>
+          </FormControl>
+        </Box>
+        <List>
           {blog.comments.map((comment, index) => (
-            <li key={index}>{comment}</li>
+            <ListItem key={index}>
+              <ListItemIcon>
+                <Icon>comment</Icon>
+              </ListItemIcon>
+              <ListItemText primary={comment} />
+            </ListItem>
           ))}
-        </ul>
-      </div>
-    </div>
+        </List>
+      </Box>
+    </Box>
   )
 }
 
