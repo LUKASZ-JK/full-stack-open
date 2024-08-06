@@ -46,4 +46,27 @@ const calculateExercises = (exercises: number[], target: number): Evaluation => 
   };
 };
 
-console.log(calculateExercises([3, 0, 2, 4.5, 0, 3, 1], 2));
+try {
+  let target: number;
+  let exercises: number[] = [];
+  if (isNaN(Number(process.argv[2]))) {
+    throw new Error('Provide valid numbers as arguments');
+  } else {
+    target = Number(process.argv[2]);
+  }
+
+  process.argv.slice(3).map(argument => {
+    if (isNaN(Number(argument))) {
+      throw new Error('Provide valid numbers as arguments');
+    } else {
+      exercises.push(Number(argument));
+    }
+  });
+  console.log(calculateExercises(exercises, target));
+} catch (error: unknown) {
+  if (error instanceof Error) {
+    console.log(error.message);
+  }
+}
+
+//console.log(calculateExercises([3, 0, 2, 4.5, 0, 3, 1], 2));
