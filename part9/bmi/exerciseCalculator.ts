@@ -8,7 +8,7 @@ interface Evaluation {
   average: number;
 }
 
-const calculateExercises = (exercises: number[], target: number): Evaluation => {
+export const calculateExercises = (exercises: number[], target: number): Evaluation => {
   const periodLength: number = exercises.length;
   const trainingDays: number = exercises.filter(day => day !== 0).length;
   const average: number = exercises.reduce((acc, curr) => acc + curr, 0) / periodLength;
@@ -48,7 +48,7 @@ const calculateExercises = (exercises: number[], target: number): Evaluation => 
 
 try {
   let target: number;
-  let exercises: number[] = [];
+  const exercises: number[] = [];
   if (isNaN(Number(process.argv[2]))) {
     throw new Error('Provide valid numbers as arguments');
   } else {
