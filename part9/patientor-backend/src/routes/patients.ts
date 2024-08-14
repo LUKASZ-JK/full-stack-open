@@ -10,6 +10,10 @@ router.get('/', (_req, res) => {
   res.send(patientsService.getAllNoSensitiveInfo());
 });
 
+router.get('/:id', (req, res) => {
+  res.send(patientsService.getSingleInfo(req.params.id));
+});
+
 router.post('/', (req, res) => {
   try {
     const newPatient = toNewPatient(req.body);
