@@ -2,11 +2,10 @@ import { Typography, Box } from '@mui/material';
 import MaleIcon from '@mui/icons-material/Male';
 import FemaleIcon from '@mui/icons-material/Female';
 
-import { Patient } from '../../types';
+import { Diagnosis, Patient } from '../../types';
 
-const SinglePatient = ({ patient }: { patient: Patient }) => {
+const SinglePatient = ({ patient, diagnoses }: { patient: Patient; diagnoses: Diagnosis[] }) => {
   const genderIcon = patient.gender === 'male' ? <MaleIcon /> : patient.gender === 'female' ? <FemaleIcon /> : null;
-  console.log(patient);
   const entries = patient.entries.map(entry => {
     return (
       <Box key={entry.id}>
@@ -15,15 +14,22 @@ const SinglePatient = ({ patient }: { patient: Patient }) => {
           <Typography sx={{ fontStyle: 'italic' }}>{entry.description}</Typography>
         </Box>
         <ul>
-          {entry.diagnosisCodes?.map(code => (
-            <li key={code}>
-              <Typography>{code}</Typography>
-            </li>
-          ))}
+          {entry.diagnosisCodes?.map(code => {
+            const diagnose: Diagnosis | undefined = diagnoses.find(diagnose => diagnose.code === code);
+            return (
+              <li key={code}>
+                <Typography>
+                  {code} {diagnose ? diagnose.name : ''}
+                </Typography>
+              </li>
+            );
+          })}
         </ul>
       </Box>
     );
   });
+
+  console.log(diagnoses);
 
   return (
     <Box mt={4}>
