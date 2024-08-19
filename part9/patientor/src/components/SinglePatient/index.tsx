@@ -2,34 +2,11 @@ import { Typography, Box } from '@mui/material';
 import MaleIcon from '@mui/icons-material/Male';
 import FemaleIcon from '@mui/icons-material/Female';
 
-import { Diagnosis, Patient } from '../../types';
+import { Patient } from '../../types';
+import SingleEntry from '../SingleEntry';
 
-const SinglePatient = ({ patient, diagnoses }: { patient: Patient; diagnoses: Diagnosis[] }) => {
+const SinglePatient = ({ patient }: { patient: Patient }) => {
   const genderIcon = patient.gender === 'male' ? <MaleIcon /> : patient.gender === 'female' ? <FemaleIcon /> : null;
-  const entries = patient.entries.map(entry => {
-    return (
-      <Box key={entry.id}>
-        <Box display="flex">
-          <Typography sx={{ mr: '0.5rem' }}>{entry.date}</Typography>
-          <Typography sx={{ fontStyle: 'italic' }}>{entry.description}</Typography>
-        </Box>
-        <ul>
-          {entry.diagnosisCodes?.map(code => {
-            const diagnose: Diagnosis | undefined = diagnoses.find(diagnose => diagnose.code === code);
-            return (
-              <li key={code}>
-                <Typography>
-                  {code} {diagnose ? diagnose.name : ''}
-                </Typography>
-              </li>
-            );
-          })}
-        </ul>
-      </Box>
-    );
-  });
-
-  console.log(diagnoses);
 
   return (
     <Box mt={4}>
@@ -44,7 +21,9 @@ const SinglePatient = ({ patient, diagnoses }: { patient: Patient; diagnoses: Di
       <Typography variant="h5" component="h2" sx={{ mt: '1rem' }}>
         entries
       </Typography>
-      {entries}
+      {patient.entries.map(entry => (
+        <SingleEntry key={entry.id} entry={entry} />
+      ))}
     </Box>
   );
 };
