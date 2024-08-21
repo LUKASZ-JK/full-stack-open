@@ -60,7 +60,10 @@ const App = () => {
           <Divider hidden />
           <Routes>
             <Route path="/" element={<PatientListPage patients={patients} setPatients={setPatients} />} />
-            <Route path="/api/patients/:id" element={patient ? <SinglePatient patient={patient} /> : null} />
+            <Route
+              path="/api/patients/:id"
+              element={patient ? <SinglePatient patient={patient} setPatients={setPatients} /> : null}
+            />
           </Routes>
         </Container>
       </div>
