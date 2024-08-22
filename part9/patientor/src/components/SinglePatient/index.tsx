@@ -10,12 +10,7 @@ import entriesService from '../../services/entries';
 import { useState } from 'react';
 import axios from 'axios';
 
-interface Props {
-  patient: Patient;
-  setPatients: React.Dispatch<React.SetStateAction<Patient[]>>;
-}
-
-const SinglePatient = ({ patient, setPatients }: Props) => {
+const SinglePatient = ({ patient }: { patient: Patient }) => {
   const [toggle, setToggle] = useToggle();
   const [notification, setNotification] = useState('');
   const [currentPatient, setCurrentPatient] = useState(patient);
@@ -23,29 +18,28 @@ const SinglePatient = ({ patient, setPatients }: Props) => {
   const genderIcon =
     currentPatient.gender === 'male' ? <MaleIcon /> : currentPatient.gender === 'female' ? <FemaleIcon /> : null;
 
+  const displayNotification = (message: string) => {
+    setNotification(message);
+    setTimeout(() => setNotification(''), 3000);
+  };
+
   const addEntry = async (values: NewEntry) => {
     try {
       const entry = await entriesService.create(currentPatient.id, values);
-      setPatients(oldPatients =>
-        oldPatients.map(oldPatient =>
-          oldPatient.id !== currentPatient.id
-            ? oldPatient
-            : { ...currentPatient, entries: currentPatient.entries.concat(entry) }
-        )
-      );
+      setToggle();
       setCurrentPatient(curr => ({ ...curr, entries: curr.entries.concat(entry) }));
     } catch (e: unknown) {
       if (axios.isAxiosError(e)) {
         if (e?.response?.data && typeof e?.response?.data === 'string') {
           const message = e.response.data.replace('Something went wrong. Error: ', '');
           console.error(message);
-          setNotification(message);
+          displayNotification(message);
         } else {
-          setNotification('Unrecognized axios error');
+          displayNotification('Unrecognized axios error');
         }
       } else {
         console.error('Unknown error', e);
-        setNotification('Unknown error');
+        displayNotification('Unknown error');
       }
     }
   };
